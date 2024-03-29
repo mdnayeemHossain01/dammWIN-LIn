@@ -1,0 +1,126 @@
+let currentQuestionIndex = 0;
+let score = 0;
+
+const questions = [
+  {
+    text: "Hub transmits data in the form of electric signals or bits.",
+    choices: ["True", "False", "Sometimes", "Not applicable"],
+    answer: "True",
+    explanation: "Hubs indeed transmit data as electric signals or bits to all connected devices."
+  },
+  {
+    text: "What Device is used for making a connection to the Internet?",
+    choices: ["Modem", "Router", "Switch", "Hub"],
+    answer: "Router",
+    explanation: "Routers are used to connect a network to the internet, routing the traffic appropriately."
+  },
+  {
+    text: "_ is an electronic device that amplifies the signal it receives.",
+    choices: ["Modulator", "Demodulator", "Transceiver", "Repeater"],
+    answer: "Repeater",
+    explanation: "Repeaters amplify signals to extend the transmission distance."
+  },
+  {
+    text: "Gateways work at the Physical layers of the OSI model.",
+    choices: ["True", "False", "Sometimes", "Only in specific cases"],
+    answer: "False",
+    explanation: "Gateways operate above the physical layer, often at the network layer."
+  },
+  {
+    text: "Which two devices connect two different network segments together with one key difference being one can have routing information but another one does not?",
+    choices: ["Router and Modem", "Switch and Hub", "Router and Switch", "Hub and Router"],
+    answer: "Router and Switch",
+    explanation: "Routers use routing information to direct data, while switches do not route data."
+  }
+];
+
+function updateQuestionCounter() {
+  document.getElementById("question-counter").innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+}
+
+function showQuestion() {
+  updateQuestionCounter();
+  const question = questions[currentQuestionIndex];
+  const questionContainer = document.getElementById("question");
+  questionContainer.innerText = question.text;
+  const choicesContainer = document.getElementById("choices");
+  choicesContainer.innerHTML = '';
+
+  question.choices.forEach(choice => {
+    const button = document.createElement("button");
+    button.innerText = choice;
+    button.disabled = question.answered;
+    if (question.userAnswer === choice) {
+      button.classList.add(question.userAnswer === question.answer ? 'correct' : 'wrong');
+    }
+    button.addEventListener('click', () => selectAnswer(choice, button));
+    choicesContainer.appendChild(button);
+  });
+
+  document.getElementById("next-button").style.display = currentQuestionIndex < questions.length - 1 ? "inline" : "none";
+  document.getElementById("prev-button").style.display = currentQuestionIndex > 0 ? "inline" : "none";
+  document.getElementById("explanation").style.display = question.answered ? "block" : "none";
+}
+
+function selectAnswer(choice, button) {
+  const question = questions[currentQuestionIndex];
+  question.userAnswer = choice;
+  question.answered = true;
+
+  const buttons = document.getElementById("choices").getElementsByTagName("button");
+  for (let btn of buttons) {
+    btn.disabled = true;
+    if (btn.innerText === question.answer) {
+      btn.classList.add('correct'); // Mark the correct answer with green
+    }
+    if (btn.innerText === choice) {
+      btn.classList.add(choice === question.answer ? 'correct' : 'wrong');
+    }
+  }
+
+  if (choice === question.answer) {
+    score++;
+  }
+
+  showExplanation(question.explanation);
+}
+
+function showExplanation(explanation) {
+  const explanationContainer = document.getElementById("explanation");
+  explanationContainer.innerHTML = `<p>Explanation: ${explanation}</p>`;
+  explanationContainer.style.display = 'block';
+}
+
+function showNextQuestion() {
+  if (currentQuestionIndex < questions.length - 1) {
+    currentQuestionIndex++;
+    showQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function showPrevQuestion() {
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
+    showQuestion();
+  }
+}
+
+function showResults() {
+  const quizContainer = document.getElementById('quiz-container');
+  const percentage = (score / questions.length) * 100;
+  quizContainer.innerHTML = `<h2>Quiz Complete!</h2>
+                             <p>You answered correctly ${score} out of ${questions.length} question(s).</p>
+                             <p>Your percentage: ${percentage.toFixed(2)}%.</p>`;
+  // Reset for a potential restart
+  questions.forEach(question => question.answered = false);
+}
+
+function startQuiz() {
+  currentQuestionIndex = 0;
+  score = 0;
+  showQuestion();
+}
+
+window.onload = startQuiz;
